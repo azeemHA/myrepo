@@ -1,0 +1,68 @@
+####CDH installation Using Tarball#####
+
+1. Install java(JDK)
+	a. Download JDK tar file, extract at a location and set JAVA_HOME in profile
+	b. check java env variable is set and validate the version
+
+2.install Database service
+	$ yum install mysql-server
+	$ service mysqld start
+	  PLEASE REMEMBER TO SET A PASSWORD FOR THE MySQL root USER !
+	To do so, start the server, then issue the following commands:
+
+	/usr/bin/mysqladmin -u root password 'new-password'
+	/usr/bin/mysqladmin -u root -h cdh-master.com password 'new-password'
+
+	Alternatively you can run:
+	/usr/bin/mysql_secure_installation
+
+<<this is the password i have set >> $ /usr/bin/mysqladmin -u root password 'android'
+
+3. Download CM tarball(on all machines)
+	$ wget https://archive.cloudera.com/cm5/cm/5/cloudera-manager-el6-cm5.10.2_x86_64.tar.gz
+
+4. $ mkdir /opt/cloudera-manager
+	$ sudo tar xzf cloudera-manager*.tar.gz -C /opt/cloudera-manager
+
+5. Create user on all machines 
+	$ sudo useradd --system --home=/opt/cloudera-manager/cm-5.10.2/run/cloudera-scm-server --no-create-home --shell=/bin/false --comment "Cloudera SCM User" cloudera-scm
+
+6. Create CM server local storage Dir and change ownership to clpudera-scm user (on CM server only)
+	$ sudo mkdir /var/lib/cloudera-scm-server
+	$ sudo chown cloudera-scm:cloudera-scm /var/lib/cloudera-scm-server
+
+7. on every CM agents
+	a.configure the Cloudera Manager Agent to point to the Cloudera Manager Server by setting the following properties in the tarball_root/etc/cloudera-scm-agent/config.ini configuration file:
+	b. modify server_host to CM server and server_port (if any other port than default)
+	c. By default, a tarball installation has a var subdirectory where state is stored. In a non-tarball installation, state is stored in /var. Cloudera recommends that you reconfigure the tarball installation to use an external directory as the /var equivalent (/var or any other directory outside the tarball) so that when you upgrade Cloudera Manager, the new tarball installation can access this state. Configure the installation to use an external directory for storing state by editing tarball_root/etc/default/cloudera-scm-agent and setting the CMF_VAR variable to the location of the /var equivalent. If you do not reuse the state directory between different tarball installations, duplicate Cloudera Manager Agent entries can occur in the Cloudera Manager database.
+
+8. configure database for CM 
+$<tarball root>/share/cmf/schema/scm_prepare_database.sh database-type [options] database-name username password
+
+[root@cdh-master schema]# ./scm_prepare_database.sh mysql -u root -p cloudera cloudera-scm android
+Enter database password:
+
+9.Downloading the Parcel and Publishing Files
+Download the parcel and manifest.json files for your OS distribution from
+CDH 5 - Impala, Spark, and Search are included in the CDH parcel.
+CDH - https://archive.cloudera.com/cdh5/parcels/
+GPL Extras - https://archive.cloudera.com/gplextras5/parcels/
+Cloudera Distribution of Apache Spark 2
+The exact parcel name is dependent on the OS. You can find all the parcels at https://archive.cloudera.com/spark2/parcels/.
+Key Trustee Server
+Go to the Key Trustee Server download page. Select Parcels from the Package or Parcel drop-down menu, and click DOWNLOAD NOW. This downloads the Key Trustee Server parcels and manifest.json files in a .tar.gz file. Extract the files with the tar xvfz filename.tar.gz command.
+Key Trustee KMS
+Go to the Key Trustee KMS download page. Select Parcels from the Package or Parcel drop-down menu, and click DOWNLOAD NOW. This downloads the Key Trustee KMS parcels and manifest.json files in a .tar.gz file. Extract the files with the tar xvfz filename.tar.gz command.
+Other services
+Accumulo - https://archive.cloudera.com/accumulo/parcels/
+Sqoop connectors - https://archive.cloudera.com/sqoop-connectors/parcels/
+
+
+
+DB's:
+service  database  username password
+Hive     hive_db    hive     hive
+Hue      hue_db     hue      hue
+OOzie    oozie_db   oozie    oozie
+Report(MN)
+CM    cm_report_db  cmreport cmreport
